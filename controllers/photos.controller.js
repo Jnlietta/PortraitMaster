@@ -7,10 +7,11 @@ exports.add = async (req, res) => {
   try {
     const { title, author, email } = req.fields;
     const file = req.files.file;
+    const fileName = file.path.split('.').slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
+    const allowedExtensions = ['.gif', '.jpg', '.png'];
 
-    if(title && author && email && file) { // if fields are not empty...
+    if(title && author && email && file && allowedExtensions.includes(fileName)) { // if fields are not empty ad file name have correct extension...
 
-      const fileName = file.path.split('/z').slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
       const newPhoto = new Photo({ title, author, email, src: fileName, votes: 0 });
       await newPhoto.save(); // ...save new photo in DB
       res.json(newPhoto);
@@ -53,4 +54,23 @@ exports.vote = async (req, res) => {
     res.status(500).json(err);
   }
 
+};
+
+/****** DELETE PHOTO OF AUTHOR ********/
+
+exports.deleteByAuthor = async (req, res) => {
+  try {
+    const authorName = req.params.authorName; 
+
+    // Remove all data from authorName
+    const result = await Photo.deleteMany({ author: authorName });
+
+    if (result.deletedCount > 0) {
+      res.json({ message: `All photos of this author have been deleted ${authorName}` });
+    } else {
+      res.json({ message: `Can't find any pictures of  ${authorName}` });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 };

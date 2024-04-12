@@ -12,6 +12,17 @@ exports.add = async (req, res) => {
     const allowedExtensions = ['gif', 'jpg', 'png'];
     const correctExtension = allowedExtensions.includes(fileExt);
 
+    const patternOne = new RegExp(/^[A-Za-z0-9\s\-_,\.;:()]+$/, 'g');
+    const patternTwo = new RegExp(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/, 'g');
+    const titleMatched = title.match(patternOne).join('');
+    const authorMatched = author.match(patternOne).join('');
+    const emailMatched = email.match(patternTwo).join('');
+
+    if(titleMatched.length < title.length && 
+      authorMatched.length < author.length &&
+      emailMatched.length < email.length
+    ) throw new Error('Invalid characters...');
+
     if(title && 
       author && 
       email && 

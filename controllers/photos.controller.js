@@ -7,12 +7,13 @@ exports.add = async (req, res) => {
   try {
     const { title, author, email } = req.fields;
     const file = req.files.file;
-    const fileName = file.path.split('.').slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
-    const allowedExtensions = ['.gif', '.jpg', '.png'];
+    const fileName = file.path.split('/').slice(-1)[0]; // cut only filename from full path, e.g. C:/test/abc.jpg -> abc.jpg
+    const fileExt = file.path.split('.').slice(-1)[0]; // cut only file extension from full path, e.g. C:/test/abc.jpg -> jpg
+    const allowedExtensions = ['gif', 'jpg', 'png'];
 
-    if(title && author && email && file && allowedExtensions.includes(fileName)) { // if fields are not empty ad file name have correct extension...
+    if(title && author && email && file && allowedExtensions.includes(fileExt)) { // if fields are not empty ad file name have correct extension...
 
-      const newPhoto = new Photo({ title, author, email, src: fileName, votes: 0 });
+      const newPhoto = new Photo({ title: title, author: author, email: email, src: fileName, votes: 0 });
       await newPhoto.save(); // ...save new photo in DB
       res.json(newPhoto);
 

@@ -7,8 +7,8 @@ const voterSchema = new mongoose.Schema({
     unique: true 
   },
   votes: [{
-    type: mongoose.Schema.Types.ObjectId, // Id of the photo that user has voted
-    ref: 'Photo' // Refer to model of photos data
+    type: String, // Id of the photo that user has voted
+    required: true,
   }]
 });
 

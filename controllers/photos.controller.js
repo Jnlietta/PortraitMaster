@@ -1,4 +1,5 @@
 const Photo = require('../models/photo.model');
+const Voter = require('../models/Voter.model');
 
 /****** SUBMIT PHOTO ********/
 
@@ -61,19 +62,39 @@ exports.loadAll = async (req, res) => {
 /****** VOTE FOR PHOTO ********/
 
 exports.vote = async (req, res) => {
+ const { remoteAddress } = req.socket;
+ const { id } = req.params;
 
   try {
-    const photoToUpdate = await Photo.findOne({ _id: req.params.id });
-    if(!photoToUpdate) res.status(404).json({ message: 'Not found' });
-    else {
-      photoToUpdate.votes++;
-      photoToUpdate.save();
-      res.send({ message: 'OK' });
+    let voter = await Voter.findOne({ user: remoteAddress });
+
+    if(!voter){
+      //if voter don't exist in db yet add this voter 
+      voter = new Voter({ user: remoteAddress, votes: [id] });
+      voter.save();
+    } else {
+      // if voter exist already in db check if voter voted on this picture
+      if(!voter.votes.includes(id)){
+        // if voter hasn't vote yet on the picture add photo id value
+        voter.votes.push(id);
+        voter.save();
+
+        const photoToUpdate = await Photo.findOne({ _id: req.params.id });
+        if(!photoToUpdate) res.status(404).json({ message: 'Not found' });
+        else {
+          photoToUpdate.votes++;
+          photoToUpdate.save();
+          res.send({ message: 'OK' });
+        }
+      } else {
+        //if voter already voted return response with error
+        throw new Error('User already voted for this photo.');
+      }
     }
+
   } catch(err) {
     res.status(500).json(err);
   }
-
 };
 
 /****** DELETE PHOTO OF AUTHOR ********/
